@@ -131,7 +131,7 @@
 	</div>
 
 	<p>
-	<div id="div_language">
+	<div id="div_language" style="display:none">
 		<select id="select_language" onchange="updateCountry()"></select>
 		&nbsp;&nbsp;
 		<select id="select_dialect"></select>
@@ -285,11 +285,13 @@
 					console.log("final transcript " + event.results[i][0].transcript);
 					final_transcript += event.results[i][0].transcript;
 					chathistory.innerHTML = chathistory.innerHTML  + linebreak("<p>you: " + final_transcript + "</p>");
+
+					stopRecognition();
+
 					var answer = botrequest(final_transcript)
 					chathistory.innerHTML = chathistory.innerHTML  +  linebreak("bot: " + answer);
 					final_transcript = "";
 
-					console.log("speak " + answer);
 					speak(answer);
 
 				} else {
@@ -317,7 +319,6 @@
 		var json_obj = JSON.parse(Httpreq.responseText);
 		console.log("answer: "+json_obj.response);
 
-
 		return json_obj.response;
 	}
 
@@ -325,9 +326,14 @@
 
 		var filteredString = str.replace(/<.*>/, "mi");
 
-		var hallo = new SpeechSynthesisUtterance(filteredString);
-		hallo.lang = "de-DE";
-		window.speechSynthesis.speak(hallo);
+		var speechSynth = new SpeechSynthesisUtterance(filteredString);
+		speechSynth.lang = "de-DE";
+		speechSynth.onend = function(event) {
+			console.log('End of speech output.');
+			startRecognition();
+		};
+
+		window.speechSynthesis.speak(speechSynth);
 	}
 
 	function upgrade() {
@@ -375,11 +381,19 @@
 	}
 
 
-	function startButton(event) {
+	function stopRecognition() {
 		if (recognizing) {
 			recognition.stop();
-			return;
 		}
+		return;
+	}
+
+	function startRecognition() {
+		startButton(new Event("start"));
+	}
+
+	function startButton(event) {
+		stopRecognition();
 		final_transcript = '';
 		recognition.lang = select_dialect.value;
 		recognition.start();
@@ -417,6 +431,6 @@
 
 
 
-	startButton(null);
+	startRecognition();
 
 </script>
