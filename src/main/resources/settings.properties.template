@@ -1,0 +1,4 @@
+bot-name: german-bot
+bot-path: /pathtosource/sources/chatbots
+language: de
+country: DE
